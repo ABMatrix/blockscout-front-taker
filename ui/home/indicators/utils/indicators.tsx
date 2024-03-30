@@ -42,7 +42,8 @@ const dailyTxsIndicator: TChainIndicator<'stats_charts_txs'> = {
 
 const nativeTokenData = {
   name: config.chain.currency.name || '',
-  icon_url: '',
+  // icon_url: '',
+  icon_url: config.chain.currency.image || '',
   symbol: '',
   address: '',
   type: 'ERC-20' as const,
@@ -53,7 +54,7 @@ const coinPriceIndicator: TChainIndicator<'stats_charts_market'> = {
   title: `${ config.chain.governanceToken.symbol || config.chain.currency.symbol } price`,
   value: (stats) => stats.coin_price === null ?
     '$N/A' :
-    '$' + Number(stats.coin_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }),
+    '$' + Number(stats.coin_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
   valueDiff: (stats) => stats?.coin_price !== null ? stats?.coin_price_change_percentage : null,
   icon: <TokenEntity.Icon token={ nativeTokenData } boxSize={ 6 } marginRight={ 0 }/>,
   hint: `${ config.chain.governanceToken.symbol || config.chain.currency.symbol } token daily price in USD.`,
@@ -66,7 +67,7 @@ const coinPriceIndicator: TChainIndicator<'stats_charts_market'> = {
         .reduceRight(nonNullTailReducer, [] as Array<TimeChartItemRaw>)
         .map(mapNullToZero),
       name: `${ config.chain.governanceToken.symbol || config.chain.currency.symbol } price`,
-      valueFormatter: (x: number) => '$' + x.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }),
+      valueFormatter: (x: number) => '$' + x.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
     } ]),
   },
 };

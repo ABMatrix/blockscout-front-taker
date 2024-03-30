@@ -118,11 +118,11 @@ const Footer = () => {
   const renderProjectInfo = React.useCallback((gridArea?: GridProps['gridArea']) => {
     return (
       <Box gridArea={ gridArea }>
-        <Link fontSize="xs" href="https://www.blockscout.com">blockscout.com</Link>
+        {/* <Link fontSize="xs" href="https://www.blockscout.com">blockscout.com</Link> */}
         <Text mt={ 3 } fontSize="xs">
-          Blockscout is a tool for inspecting and analyzing EVM based blockchains. Blockchain explorer for Ethereum Networks.
+          Taker Scan is a Block Explorer for the Taker Network.
         </Text>
-        <VStack spacing={ 1 } mt={ 6 } alignItems="start">
+        {/* <VStack spacing={ 1 } mt={ 6 } alignItems="start">
           { apiVersionUrl && (
             <Text fontSize="xs">
               Backend: <Link href={ apiVersionUrl } target="_blank">{ backendVersionData?.backend_version }</Link>
@@ -133,7 +133,7 @@ const Footer = () => {
               Frontend: { frontendLink }
             </Text>
           ) }
-        </VStack>
+        </VStack> */}
       </Box>
     );
   }, [ apiVersionUrl, backendVersionData?.backend_version, frontendLink ]);
@@ -218,7 +218,7 @@ const Footer = () => {
         justifyContent={{ lg: 'flex-end' }}
         mt={{ base: 8, lg: 0 }}
       >
-        { BLOCKSCOUT_LINKS.map(link => <FooterLinkItem { ...link } key={ link.text }/>) }
+        {/* { BLOCKSCOUT_LINKS.map(link => <FooterLinkItem { ...link } key={ link.text }/>) } */}
       </Grid>
     </Grid>
   );
