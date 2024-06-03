@@ -19,6 +19,7 @@ export enum EventTypes {
   EXPERIMENT_STARTED = 'Experiment started',
   FILTERS = 'Filters',
   BUTTON_CLICK = 'Button click',
+  PROMO_BANNER = 'Promo banner',
 }
 
 /* eslint-disable @typescript-eslint/indent */
@@ -98,8 +99,20 @@ Type extends EventTypes.PAGE_WIDGET ? (
   {
     'Type': 'Tokens dropdown' | 'Tokens show all (icon)' | 'Add to watchlist' | 'Address actions (more button)';
   } | {
-    'Type': 'Favorite app' | 'More button';
+    'Type': 'Favorite app' | 'More button' | 'Security score' | 'Total contracts' | 'Verified contracts' | 'Analyzed contracts';
     'Info': string;
+    'Source': 'Discovery view' | 'Security view' | 'App modal' | 'App page' | 'Security score popup' | 'Banner';
+  } | {
+    'Type': 'Security score';
+    'Source': 'Analyzed contracts popup';
+  } | {
+    'Type': 'Action button';
+    'Info': string;
+    'Source': 'Txn' | 'NFT collection' | 'NFT item';
+  } | {
+    'Type': 'Address tag';
+    'Info': string;
+    'URL': string;
   }
 ) :
 Type extends EventTypes.TX_INTERPRETATION_INTERACTION ? {
@@ -115,8 +128,12 @@ Type extends EventTypes.FILTERS ? {
   'Filter name': string;
 } :
 Type extends EventTypes.BUTTON_CLICK ? {
-  'Content': 'Swap button';
+  'Content': string;
   'Source': string;
+} :
+Type extends EventTypes.PROMO_BANNER ? {
+  'Source': 'Marketplace';
+  'Link': string;
 } :
 undefined;
 /* eslint-enable @typescript-eslint/indent */

@@ -10,7 +10,7 @@ import getQueryParamString from 'lib/router/getQueryParamString';
 import { publicClient } from 'lib/web3/client';
 import TextAd from 'ui/shared/ad/TextAd';
 import isCustomAppError from 'ui/shared/AppError/isCustomAppError';
-import EntityTags from 'ui/shared/EntityTags';
+import EntityTags from 'ui/shared/EntityTags/EntityTags';
 import PageTitle from 'ui/shared/Page/PageTitle';
 import RoutedTabs from 'ui/shared/Tabs/RoutedTabs';
 import TabsSkeleton from 'ui/shared/Tabs/TabsSkeleton';
@@ -39,7 +39,7 @@ const TransactionPageContent = () => {
   const txQuery = useTxQuery();
   const { data, isPlaceholderData, isError, error, errorUpdateCount } = txQuery;
 
-  const showDegradedView = publicClient && (isError || isPlaceholderData) && errorUpdateCount > 0;
+  const showDegradedView = publicClient && ((isError && error.status !== 422) || isPlaceholderData) && errorUpdateCount > 0;
 
   const tabs: Array<RoutedTab> = (() => {
     const detailsComponent = showDegradedView ?
@@ -63,7 +63,7 @@ const TransactionPageContent = () => {
         { id: 'user_ops', title: 'User operations', component: <TxUserOps txQuery={ txQuery }/> } :
         undefined,
       { id: 'internal', title: 'Internal txns', component: <TxInternals txQuery={ txQuery }/> },
-      txQuery.data?.blob_versioned_hashes?.length ?
+      config.features.dataAvailability.isEnabled && txQuery.data?.blob_versioned_hashes?.length ?
         { id: 'blobs', title: 'Blobs', component: <TxBlobs txQuery={ txQuery }/> } :
         undefined,
       { id: 'logs', title: 'Logs', component: <TxLogs txQuery={ txQuery }/> },
@@ -77,7 +77,7 @@ const TransactionPageContent = () => {
   const tags = (
     <EntityTags
       isLoading={ isPlaceholderData }
-      tagsBefore={ [ data?.tx_tag ? { label: data.tx_tag, display_name: data.tx_tag } : undefined ] }
+      tags={ data?.tx_tag ? [ { slug: data.tx_tag, name: data.tx_tag, tagType: 'private_tag' as const } ] : [] }
     />
   );
 

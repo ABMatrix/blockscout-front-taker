@@ -12,12 +12,12 @@ import config from 'configs/app';
 import useQueryClientConfig from 'lib/api/useQueryClientConfig';
 import { AppContextProvider } from 'lib/contexts/app';
 import { ChakraProvider } from 'lib/contexts/chakra';
+import { MarketplaceContextProvider } from 'lib/contexts/marketplace';
 import { ScrollDirectionProvider } from 'lib/contexts/scrollDirection';
 import { growthBook } from 'lib/growthbook/init';
 import useLoadFeatures from 'lib/growthbook/useLoadFeatures';
 import useNotifyOnNavigation from 'lib/hooks/useNotifyOnNavigation';
 import { SocketProvider } from 'lib/socket/context';
-import theme from 'theme';
 import AppErrorBoundary from 'ui/shared/AppError/AppErrorBoundary';
 import GoogleAnalytics from 'ui/shared/GoogleAnalytics';
 import Layout from 'ui/shared/layout/Layout';
@@ -56,7 +56,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const getLayout = Component.getLayout ?? ((page) => <Layout>{ page }</Layout>);
 
   return (
-    <ChakraProvider theme={ theme } cookies={ pageProps.cookies }>
+    <ChakraProvider cookies={ pageProps.cookies }>
       <AppErrorBoundary
         { ...ERROR_SCREEN_STYLES }
         onError={ handleError }
@@ -67,7 +67,9 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
               <GrowthBookProvider growthbook={ growthBook }>
                 <ScrollDirectionProvider>
                   <SocketProvider url={ `${ config.api.socket }${ config.api.basePath }/socket/v2` }>
-                    { getLayout(<Component { ...pageProps }/>) }
+                    <MarketplaceContextProvider>
+                      { getLayout(<Component { ...pageProps }/>) }
+                    </MarketplaceContextProvider>
                   </SocketProvider>
                 </ScrollDirectionProvider>
               </GrowthBookProvider>

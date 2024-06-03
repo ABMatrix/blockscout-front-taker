@@ -29,9 +29,11 @@ import TxsWithFrontendSorting from 'ui/txs/TxsWithFrontendSorting';
 
 const TAB_LIST_PROPS = {
   marginBottom: 0,
-  py: 5,
+  pt: 6,
+  pb: 6,
   marginTop: -5,
 };
+const TABS_HEIGHT = 88;
 
 const BlockPageContent = () => {
   const router = useRouter();
@@ -62,11 +64,11 @@ const BlockPageContent = () => {
       component: (
         <>
           { blockTxsQuery.isDegradedData && <ServiceDegradationWarning isLoading={ blockTxsQuery.isPlaceholderData } mb={ 6 }/> }
-          <TxsWithFrontendSorting query={ blockTxsQuery } showBlockInfo={ false } showSocketInfo={ false }/>
+          <TxsWithFrontendSorting query={ blockTxsQuery } showBlockInfo={ false } showSocketInfo={ false } top={ TABS_HEIGHT }/>
         </>
       ),
     },
-    blockQuery.data?.blob_tx_count ?
+    config.features.dataAvailability.isEnabled && blockQuery.data?.blob_tx_count ?
       {
         id: 'blob_txs',
         title: 'Blob txns',

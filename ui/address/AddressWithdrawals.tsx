@@ -2,18 +2,24 @@ import { Show, Hide } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import React from 'react';
 
+import useIsMounted from 'lib/hooks/useIsMounted';
 import getQueryParamString from 'lib/router/getQueryParamString';
 import { generateListStub } from 'stubs/utils';
 import { WITHDRAWAL } from 'stubs/withdrawals';
-import ActionBar from 'ui/shared/ActionBar';
+import ActionBar, { ACTION_BAR_HEIGHT_DESKTOP } from 'ui/shared/ActionBar';
 import DataListDisplay from 'ui/shared/DataListDisplay';
 import Pagination from 'ui/shared/pagination/Pagination';
 import useQueryWithPages from 'ui/shared/pagination/useQueryWithPages';
 import BeaconChainWithdrawalsListItem from 'ui/withdrawals/beaconChain/BeaconChainWithdrawalsListItem';
 import BeaconChainWithdrawalsTable from 'ui/withdrawals/beaconChain/BeaconChainWithdrawalsTable';
 
-const AddressWithdrawals = ({ scrollRef }: {scrollRef?: React.RefObject<HTMLDivElement>}) => {
+type Props = {
+  scrollRef?: React.RefObject<HTMLDivElement>;
+  shouldRender?: boolean;
+}
+const AddressWithdrawals = ({ scrollRef, shouldRender = true }: Props) => {
   const router = useRouter();
+  const isMounted = useIsMounted();
 
   const hash = getQueryParamString(router.query.hash);
 
@@ -28,6 +34,11 @@ const AddressWithdrawals = ({ scrollRef }: {scrollRef?: React.RefObject<HTMLDivE
       } }),
     },
   });
+
+  if (!isMounted || !shouldRender) {
+    return null;
+  }
+
   const content = data?.items ? (
     <>
       <Show below="lg" ssr={ false }>
@@ -41,7 +52,12 @@ const AddressWithdrawals = ({ scrollRef }: {scrollRef?: React.RefObject<HTMLDivE
         )) }
       </Show>
       <Hide below="lg" ssr={ false }>
-        <BeaconChainWithdrawalsTable items={ data.items } view="address" top={ pagination.isVisible ? 80 : 0 } isLoading={ isPlaceholderData }/>
+        <BeaconChainWithdrawalsTable
+          items={ data.items }
+          view="address"
+          top={ pagination.isVisible ? ACTION_BAR_HEIGHT_DESKTOP : 0 }
+          isLoading={ isPlaceholderData }
+        />
       </Hide>
     </>
   ) : null ;

@@ -2,7 +2,6 @@ import { getFeaturePayload } from 'configs/app/features/types';
 import type {
   UserInfo,
   CustomAbis,
-  PublicTags,
   ApiKeys,
   VerifiedAddressResponse,
   TokenInfoApplicationConfig,
@@ -29,11 +28,13 @@ import type {
   AddressNFTsResponse,
   AddressCollectionsResponse,
   AddressNFTTokensFilter,
+  AddressCoinBalanceHistoryChartOld,
 } from 'types/api/address';
 import type { AddressesResponse } from 'types/api/addresses';
+import type { AddressMetadataInfo, PublicTagTypesResponse } from 'types/api/addressMetadata';
 import type { TxBlobs, Blob } from 'types/api/blobs';
 import type { BlocksResponse, BlockTransactionsResponse, Block, BlockFilters, BlockWithdrawalsResponse } from 'types/api/block';
-import type { ChartMarketResponse, ChartTransactionResponse } from 'types/api/charts';
+import type { ChartMarketResponse, ChartSecondaryCoinPriceResponse, ChartTransactionResponse } from 'types/api/charts';
 import type { BackendVersionConfig } from 'types/api/configs';
 import type {
   SmartContract,
@@ -63,6 +64,7 @@ import type {
   OptimisticL2OutputRootsResponse,
   OptimisticL2TxnBatchesResponse,
   OptimisticL2WithdrawalsResponse,
+  OptimisticL2DisputeGamesResponse,
 } from 'types/api/optimisticL2';
 import type { RawTracesResponse } from 'types/api/rawTrace';
 import type { SearchRedirectResult, SearchResult, SearchResultFilters, SearchResultItem } from 'types/api/search';
@@ -87,6 +89,7 @@ import type {
   TransactionsResponseWatchlist,
   TransactionsSorting,
   TransactionsResponseWithBlobs,
+  TransactionsStats,
 } from 'types/api/transaction';
 import type { TxInterpretationResponse } from 'types/api/txInterpretation';
 import type { TTxsFilters, TTxsWithBlobsFilters } from 'types/api/txsFilters';
@@ -96,7 +99,14 @@ import type { ValidatorsCountersResponse, ValidatorsFilters, ValidatorsResponse,
 import type { VerifiedContractsSorting } from 'types/api/verifiedContracts';
 import type { VisualizedContract } from 'types/api/visualization';
 import type { WithdrawalsResponse, WithdrawalsCounters } from 'types/api/withdrawals';
-import type { ZkEvmL2TxnBatch, ZkEvmL2TxnBatchesItem, ZkEvmL2TxnBatchesResponse, ZkEvmL2TxnBatchTxs } from 'types/api/zkEvmL2';
+import type {
+  ZkEvmL2DepositsResponse,
+  ZkEvmL2TxnBatch,
+  ZkEvmL2TxnBatchesItem,
+  ZkEvmL2TxnBatchesResponse,
+  ZkEvmL2TxnBatchTxs,
+  ZkEvmL2WithdrawalsResponse,
+} from 'types/api/zkEvmL2';
 import type { ZkSyncBatch, ZkSyncBatchesResponse, ZkSyncBatchTxs } from 'types/api/zkSyncL2';
 import type { MarketplaceAppOverview } from 'types/client/marketplace';
 import type { ArrayElement } from 'types/utils';
@@ -136,10 +146,6 @@ export const RESOURCES = {
     path: '/api/account/v2/user/watchlist/:id?',
     pathParams: [ 'id' as const ],
     filterFields: [ ],
-  },
-  public_tags: {
-    path: '/api/account/v2/user/public_tags/:id?',
-    pathParams: [ 'id' as const ],
   },
   private_tags_address: {
     path: '/api/account/v2/user/tags/address/:id?',
@@ -235,6 +241,29 @@ export const RESOURCES = {
     filterFields: [ 'name' as const, 'only_active' as const ],
   },
 
+  // METADATA SERVICE & PUBLIC TAGS
+  address_metadata_info: {
+    path: '/api/v1/metadata',
+    endpoint: getFeaturePayload(config.features.addressMetadata)?.api.endpoint,
+    basePath: getFeaturePayload(config.features.addressMetadata)?.api.basePath,
+  },
+  address_metadata_tag_search: {
+    path: '/api/v1/tags:search',
+    endpoint: getFeaturePayload(config.features.addressMetadata)?.api.endpoint,
+    basePath: getFeaturePayload(config.features.addressMetadata)?.api.basePath,
+  },
+  address_metadata_tag_types: {
+    path: '/api/v1/public-tag-types',
+    endpoint: getFeaturePayload(config.features.addressMetadata)?.api.endpoint,
+    basePath: getFeaturePayload(config.features.addressMetadata)?.api.basePath,
+  },
+  public_tag_application: {
+    path: '/api/v1/chains/:chainId/metadata-submissions/tag',
+    pathParams: [ 'chainId' as const ],
+    endpoint: getFeaturePayload(config.features.publicTagsSubmission)?.api.endpoint,
+    basePath: getFeaturePayload(config.features.publicTagsSubmission)?.api.basePath,
+  },
+
   // VISUALIZATION
   visualize_sol2uml: {
     path: '/api/v1/solidity\\:visualize-contracts',
@@ -274,6 +303,9 @@ export const RESOURCES = {
     path: '/api/v2/blocks/:height_or_hash/withdrawals',
     pathParams: [ 'height_or_hash' as const ],
     filterFields: [],
+  },
+  txs_stats: {
+    path: '/api/v2/transactions/stats',
   },
   txs_validated: {
     path: '/api/v2/transactions',
@@ -539,6 +571,9 @@ export const RESOURCES = {
   stats_charts_market: {
     path: '/api/v2/stats/charts/market',
   },
+  stats_charts_secondary_coin_price: {
+    path: '/api/v2/stats/charts/secondary-coin-market',
+  },
 
   // HOMEPAGE
   homepage_blocks: {
@@ -580,43 +615,70 @@ export const RESOURCES = {
   },
 
   // optimistic L2
-  l2_deposits: {
+  optimistic_l2_deposits: {
     path: '/api/v2/optimism/deposits',
     filterFields: [],
   },
 
-  l2_deposits_count: {
+  optimistic_l2_deposits_count: {
     path: '/api/v2/optimism/deposits/count',
   },
 
-  l2_withdrawals: {
+  optimistic_l2_withdrawals: {
     path: '/api/v2/optimism/withdrawals',
     filterFields: [],
   },
 
-  l2_withdrawals_count: {
+  optimistic_l2_withdrawals_count: {
     path: '/api/v2/optimism/withdrawals/count',
   },
 
-  l2_output_roots: {
+  optimistic_l2_output_roots: {
     path: '/api/v2/optimism/output-roots',
     filterFields: [],
   },
 
-  l2_output_roots_count: {
+  optimistic_l2_output_roots_count: {
     path: '/api/v2/optimism/output-roots/count',
   },
 
-  l2_txn_batches: {
+  optimistic_l2_txn_batches: {
     path: '/api/v2/optimism/txn-batches',
     filterFields: [],
   },
 
-  l2_txn_batches_count: {
+  optimistic_l2_txn_batches_count: {
     path: '/api/v2/optimism/txn-batches/count',
   },
 
+  optimistic_l2_dispute_games: {
+    path: '/api/v2/optimism/games',
+    filterFields: [],
+  },
+
+  optimistic_l2_dispute_games_count: {
+    path: '/api/v2/optimism/games/count',
+  },
+
   // zkEvm L2
+  zkevm_l2_deposits: {
+    path: '/api/v2/zkevm/deposits',
+    filterFields: [],
+  },
+
+  zkevm_l2_deposits_count: {
+    path: '/api/v2/zkevm/deposits/count',
+  },
+
+  zkevm_l2_withdrawals: {
+    path: '/api/v2/zkevm/withdrawals',
+    filterFields: [],
+  },
+
+  zkevm_l2_withdrawals_count: {
+    path: '/api/v2/zkevm/withdrawals/count',
+  },
+
   zkevm_l2_txn_batches: {
     path: '/api/v2/zkevm/batches',
     filterFields: [],
@@ -731,6 +793,12 @@ export const RESOURCES = {
     path: '/api/v2/config/backend-version',
   },
 
+  // CSV EXPORT
+  csv_export_token_holders: {
+    path: '/api/v2/tokens/:hash/holders/csv',
+    pathParams: [ 'hash' as const ],
+  },
+
   // OTHER
   api_v2_key: {
     path: '/api/v2/key',
@@ -794,9 +862,10 @@ export type PaginatedResources = 'blocks' | 'block_txs' |
 'token_transfers' | 'token_holders' | 'token_inventory' | 'tokens' | 'tokens_bridged' |
 'token_instance_transfers' | 'token_instance_holders' |
 'verified_contracts' |
-'l2_output_roots' | 'l2_withdrawals' | 'l2_txn_batches' | 'l2_deposits' |
+'optimistic_l2_output_roots' | 'optimistic_l2_withdrawals' | 'optimistic_l2_txn_batches' | 'optimistic_l2_deposits' |
+'optimistic_l2_dispute_games' |
 'shibarium_deposits' | 'shibarium_withdrawals' |
-'zkevm_l2_txn_batches' | 'zkevm_l2_txn_batch_txs' |
+'zkevm_l2_deposits' | 'zkevm_l2_withdrawals' | 'zkevm_l2_txn_batches' | 'zkevm_l2_txn_batch_txs' |
 'zksync_l2_txn_batches' | 'zksync_l2_txn_batch_txs' |
 'withdrawals' | 'address_withdrawals' | 'block_withdrawals' |
 'watchlist' | 'private_tags_address' | 'private_tags_tx' |
@@ -811,7 +880,6 @@ export type PaginatedResponse<Q extends PaginatedResources> = ResourcePayload<Q>
 export type ResourcePayloadA<Q extends ResourceName> =
 Q extends 'user_info' ? UserInfo :
 Q extends 'custom_abi' ? CustomAbis :
-Q extends 'public_tags' ? PublicTags :
 Q extends 'private_tags_address' ? AddressTagsResponse :
 Q extends 'private_tags_tx' ? TransactionTagsResponse :
 Q extends 'api_keys' ? ApiKeys :
@@ -822,6 +890,7 @@ Q extends 'token_info_applications' ? TokenInfoApplications :
 Q extends 'stats' ? HomeStats :
 Q extends 'stats_charts_txs' ? ChartTransactionResponse :
 Q extends 'stats_charts_market' ? ChartMarketResponse :
+Q extends 'stats_charts_secondary_coin_price' ? ChartSecondaryCoinPriceResponse :
 Q extends 'homepage_blocks' ? Array<Block> :
 Q extends 'homepage_txs' ? Array<Transaction> :
 Q extends 'homepage_txs_watchlist' ? Array<Transaction> :
@@ -837,6 +906,7 @@ Q extends 'blocks' ? BlocksResponse :
 Q extends 'block' ? Block :
 Q extends 'block_txs' ? BlockTransactionsResponse :
 Q extends 'block_withdrawals' ? BlockWithdrawalsResponse :
+Q extends 'txs_stats' ? TransactionsStats :
 Q extends 'txs_validated' ? TransactionsResponseValidated :
 Q extends 'txs_pending' ? TransactionsResponsePending :
 Q extends 'txs_with_blobs' ? TransactionsResponseWithBlobs :
@@ -859,7 +929,7 @@ Q extends 'address_internal_txs' ? AddressInternalTxsResponse :
 Q extends 'address_token_transfers' ? AddressTokenTransferResponse :
 Q extends 'address_blocks_validated' ? AddressBlocksValidatedResponse :
 Q extends 'address_coin_balance' ? AddressCoinBalanceHistoryResponse :
-Q extends 'address_coin_balance_chart' ? AddressCoinBalanceHistoryChart :
+Q extends 'address_coin_balance_chart' ? AddressCoinBalanceHistoryChartOld | AddressCoinBalanceHistoryChart :
 Q extends 'address_logs' ? LogsResponseAddress :
 Q extends 'address_tokens' ? AddressTokensResponse :
 Q extends 'address_nfts' ? AddressNFTsResponse :
@@ -892,19 +962,16 @@ Q extends 'visualize_sol2uml' ? VisualizedContract :
 Q extends 'contract_verification_config' ? SmartContractVerificationConfig :
 Q extends 'withdrawals' ? WithdrawalsResponse :
 Q extends 'withdrawals_counters' ? WithdrawalsCounters :
-Q extends 'l2_output_roots' ? OptimisticL2OutputRootsResponse :
-Q extends 'l2_withdrawals' ? OptimisticL2WithdrawalsResponse :
-Q extends 'l2_deposits' ? OptimisticL2DepositsResponse :
-Q extends 'l2_txn_batches' ? OptimisticL2TxnBatchesResponse :
-Q extends 'l2_output_roots_count' ? number :
-Q extends 'l2_withdrawals_count' ? number :
-Q extends 'l2_deposits_count' ? number :
-Q extends 'l2_txn_batches_count' ? number :
-Q extends 'zkevm_l2_txn_batches' ? ZkEvmL2TxnBatchesResponse :
-Q extends 'zkevm_l2_txn_batches_count' ? number :
-Q extends 'zkevm_l2_txn_batch' ? ZkEvmL2TxnBatch :
-Q extends 'zkevm_l2_txn_batch_txs' ? ZkEvmL2TxnBatchTxs :
-Q extends 'config_backend_version' ? BackendVersionConfig :
+Q extends 'optimistic_l2_output_roots' ? OptimisticL2OutputRootsResponse :
+Q extends 'optimistic_l2_withdrawals' ? OptimisticL2WithdrawalsResponse :
+Q extends 'optimistic_l2_deposits' ? OptimisticL2DepositsResponse :
+Q extends 'optimistic_l2_txn_batches' ? OptimisticL2TxnBatchesResponse :
+Q extends 'optimistic_l2_dispute_games' ? OptimisticL2DisputeGamesResponse :
+Q extends 'optimistic_l2_output_roots_count' ? number :
+Q extends 'optimistic_l2_withdrawals_count' ? number :
+Q extends 'optimistic_l2_deposits_count' ? number :
+Q extends 'optimistic_l2_txn_batches_count' ? number :
+Q extends 'optimistic_l2_dispute_games_count' ? number :
 never;
 // !!! IMPORTANT !!!
 // See comment above
@@ -912,6 +979,9 @@ never;
 
 /* eslint-disable @typescript-eslint/indent */
 export type ResourcePayloadB<Q extends ResourceName> =
+Q extends 'config_backend_version' ? BackendVersionConfig :
+Q extends 'address_metadata_info' ? AddressMetadataInfo :
+Q extends 'address_metadata_tag_types' ? PublicTagTypesResponse :
 Q extends 'blob' ? Blob :
 Q extends 'marketplace_dapps' ? Array<MarketplaceAppOverview> :
 Q extends 'marketplace_dapp' ? MarketplaceAppOverview :
@@ -921,6 +991,14 @@ Q extends 'shibarium_withdrawals' ? ShibariumWithdrawalsResponse :
 Q extends 'shibarium_deposits' ? ShibariumDepositsResponse :
 Q extends 'shibarium_withdrawals_count' ? number :
 Q extends 'shibarium_deposits_count' ? number :
+Q extends 'zkevm_l2_deposits' ? ZkEvmL2DepositsResponse :
+Q extends 'zkevm_l2_deposits_count' ? number :
+Q extends 'zkevm_l2_withdrawals' ? ZkEvmL2WithdrawalsResponse :
+Q extends 'zkevm_l2_withdrawals_count' ? number :
+Q extends 'zkevm_l2_txn_batches' ? ZkEvmL2TxnBatchesResponse :
+Q extends 'zkevm_l2_txn_batches_count' ? number :
+Q extends 'zkevm_l2_txn_batch' ? ZkEvmL2TxnBatch :
+Q extends 'zkevm_l2_txn_batch_txs' ? ZkEvmL2TxnBatchTxs :
 Q extends 'zksync_l2_txn_batches' ? ZkSyncBatchesResponse :
 Q extends 'zksync_l2_txn_batches_count' ? number :
 Q extends 'zksync_l2_txn_batch' ? ZkSyncBatch :

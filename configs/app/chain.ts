@@ -13,9 +13,10 @@ const chain = Object.freeze({
     decimals: Number(getEnvValue('NEXT_PUBLIC_NETWORK_CURRENCY_DECIMALS')) || DEFAULT_CURRENCY_DECIMALS,
     image: getEnvValue('NEXT_PUBLIC_NETWORK_CURRENCY_IMAGE_URL'),
   },
-  governanceToken: {
-    symbol: getEnvValue('NEXT_PUBLIC_NETWORK_GOVERNANCE_TOKEN_SYMBOL'),
+  secondaryCoin: {
+    symbol: getEnvValue('NEXT_PUBLIC_NETWORK_SECONDARY_COIN_SYMBOL'),
   },
+  tokenStandard: getEnvValue('NEXT_PUBLIC_NETWORK_TOKEN_STANDARD_NAME') || 'ERC',
   rpcUrl: getEnvValue('NEXT_PUBLIC_NETWORK_RPC_URL'),
   isTestnet: getEnvValue('NEXT_PUBLIC_IS_TESTNET') === 'true',
   verificationType: getEnvValue('NEXT_PUBLIC_NETWORK_VERIFICATION_TYPE') || 'mining',

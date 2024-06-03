@@ -1,43 +1,106 @@
-import { test as base, expect } from '@playwright/experimental-ct-react';
 import React from 'react';
 
-import { buildExternalAssetFilePath } from 'configs/app/utils';
 import { apps as appsMock } from 'mocks/apps/apps';
-import contextWithEnvs from 'playwright/fixtures/contextWithEnvs';
-import TestApp from 'playwright/TestApp';
-import * as app from 'playwright/utils/app';
+import { securityReports as securityReportsMock } from 'mocks/apps/securityReports';
+import { test, expect, devices } from 'playwright/lib';
 
 import Marketplace from './Marketplace';
 
-const MARKETPLACE_CONFIG_URL = app.url + buildExternalAssetFilePath('NEXT_PUBLIC_MARKETPLACE_CONFIG_URL', 'https://marketplace-config.json') || '';
+const MARKETPLACE_CONFIG_URL = 'http://localhost/marketplace-config.json';
 
-const test = base.extend({
-  context: contextWithEnvs([
-    { name: 'NEXT_PUBLIC_MARKETPLACE_CONFIG_URL', value: MARKETPLACE_CONFIG_URL },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ]) as any,
+test.beforeEach(async({ mockConfigResponse, mockEnvs, mockAssetResponse }) => {
+  await mockEnvs([
+    [ 'NEXT_PUBLIC_MARKETPLACE_ENABLED', 'true' ],
+    [ 'NEXT_PUBLIC_MARKETPLACE_CONFIG_URL', MARKETPLACE_CONFIG_URL ],
+  ]);
+  await mockConfigResponse('NEXT_PUBLIC_MARKETPLACE_CONFIG_URL', MARKETPLACE_CONFIG_URL, JSON.stringify(appsMock));
+  await Promise.all(appsMock.map(app => mockAssetResponse(app.logo, './playwright/mocks/image_s.jpg')));
 });
 
-test('base view +@mobile +@dark-mode', async({ mount, page }) => {
-  await page.route(MARKETPLACE_CONFIG_URL, (route) => route.fulfill({
-    status: 200,
-    body: JSON.stringify(appsMock),
-  }));
-
-  await Promise.all(appsMock.map(app =>
-    page.route(app.logo, (route) =>
-      route.fulfill({
-        status: 200,
-        path: './playwright/mocks/image_s.jpg',
-      }),
-    ),
-  ));
-
-  const component = await mount(
-    <TestApp>
-      <Marketplace/>
-    </TestApp>,
-  );
+test('base view +@dark-mode', async({ render }) => {
+  const component = await render(<Marketplace/>);
 
   await expect(component).toHaveScreenshot();
+});
+
+test('with featured app +@dark-mode', async({ render, mockEnvs }) => {
+  await mockEnvs([
+    [ 'NEXT_PUBLIC_MARKETPLACE_FEATURED_APP', 'hop-exchange' ],
+  ]);
+  const component = await render(<Marketplace/>);
+
+  await expect(component).toHaveScreenshot();
+});
+
+test('with banner +@dark-mode', async({ render, mockEnvs, mockConfigResponse }) => {
+  const MARKETPLACE_BANNER_CONTENT_URL = 'https://localhost/marketplace-banner.html';
+  const MARKETPLACE_BANNER_LINK_URL = 'https://example.com';
+
+  await mockEnvs([
+    [ 'NEXT_PUBLIC_MARKETPLACE_BANNER_CONTENT_URL', MARKETPLACE_BANNER_CONTENT_URL ],
+    [ 'NEXT_PUBLIC_MARKETPLACE_BANNER_LINK_URL', MARKETPLACE_BANNER_LINK_URL ],
+  ]);
+  await mockConfigResponse('MARKETPLACE_BANNER_CONTENT_URL', MARKETPLACE_BANNER_CONTENT_URL, './playwright/mocks/page.html', true);
+  const component = await render(<Marketplace/>);
+
+  await expect(component).toHaveScreenshot();
+});
+
+test('with scores +@dark-mode', async({ render, mockConfigResponse, mockEnvs }) => {
+  const MARKETPLACE_SECURITY_REPORTS_URL = 'https://marketplace-security-reports.json';
+  await mockEnvs([
+    [ 'NEXT_PUBLIC_MARKETPLACE_SECURITY_REPORTS_URL', MARKETPLACE_SECURITY_REPORTS_URL ],
+  ]);
+  await mockConfigResponse('NEXT_PUBLIC_MARKETPLACE_SECURITY_REPORTS_URL', MARKETPLACE_SECURITY_REPORTS_URL, JSON.stringify(securityReportsMock));
+  const component = await render(<Marketplace/>);
+  await component.getByText('Apps scores').click();
+
+  await expect(component).toHaveScreenshot();
+});
+
+// I had a memory error while running tests in GH actions
+// separate run for mobile tests fixes it
+test.describe('mobile', () => {
+  test.use({ viewport: devices['iPhone 13 Pro'].viewport });
+
+  test('base view', async({ render }) => {
+    const component = await render(<Marketplace/>);
+
+    await expect(component).toHaveScreenshot();
+  });
+
+  test('with featured app', async({ render, mockEnvs }) => {
+    await mockEnvs([
+      [ 'NEXT_PUBLIC_MARKETPLACE_FEATURED_APP', 'hop-exchange' ],
+    ]);
+    const component = await render(<Marketplace/>);
+
+    await expect(component).toHaveScreenshot();
+  });
+
+  test('with banner', async({ render, mockEnvs, mockConfigResponse }) => {
+    const MARKETPLACE_BANNER_CONTENT_URL = 'https://localhost/marketplace-banner.html';
+    const MARKETPLACE_BANNER_LINK_URL = 'https://example.com';
+
+    await mockEnvs([
+      [ 'NEXT_PUBLIC_MARKETPLACE_BANNER_CONTENT_URL', MARKETPLACE_BANNER_CONTENT_URL ],
+      [ 'NEXT_PUBLIC_MARKETPLACE_BANNER_LINK_URL', MARKETPLACE_BANNER_LINK_URL ],
+    ]);
+    await mockConfigResponse('MARKETPLACE_BANNER_CONTENT_URL', MARKETPLACE_BANNER_CONTENT_URL, './playwright/mocks/page.html', true);
+    const component = await render(<Marketplace/>);
+
+    await expect(component).toHaveScreenshot();
+  });
+
+  test('with scores', async({ render, mockConfigResponse, mockEnvs }) => {
+    const MARKETPLACE_SECURITY_REPORTS_URL = 'https://marketplace-security-reports.json';
+    await mockEnvs([
+      [ 'NEXT_PUBLIC_MARKETPLACE_SECURITY_REPORTS_URL', MARKETPLACE_SECURITY_REPORTS_URL ],
+    ]);
+    await mockConfigResponse('NEXT_PUBLIC_MARKETPLACE_SECURITY_REPORTS_URL', MARKETPLACE_SECURITY_REPORTS_URL, JSON.stringify(securityReportsMock));
+    const component = await render(<Marketplace/>);
+    await component.getByText('Apps scores').click();
+
+    await expect(component).toHaveScreenshot();
+  });
 });

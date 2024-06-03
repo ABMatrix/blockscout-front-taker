@@ -10,12 +10,13 @@ import type { Transaction, TransactionsSortingField, TransactionsSortingValue, T
 import { getResourceKey } from 'lib/api/useApiQuery';
 import getFilterValueFromQuery from 'lib/getFilterValueFromQuery';
 import useIsMobile from 'lib/hooks/useIsMobile';
+import useIsMounted from 'lib/hooks/useIsMounted';
 import getQueryParamString from 'lib/router/getQueryParamString';
 import useSocketChannel from 'lib/socket/useSocketChannel';
 import useSocketMessage from 'lib/socket/useSocketMessage';
 import { TX } from 'stubs/tx';
 import { generateListStub } from 'stubs/utils';
-import ActionBar from 'ui/shared/ActionBar';
+import ActionBar, { ACTION_BAR_HEIGHT_DESKTOP } from 'ui/shared/ActionBar';
 import Pagination from 'ui/shared/pagination/Pagination';
 import useQueryWithPages from 'ui/shared/pagination/useQueryWithPages';
 import getSortParamsFromValue from 'ui/shared/sort/getSortParamsFromValue';
@@ -47,13 +48,15 @@ const matchFilter = (filterValue: AddressFromToFilter, transaction: Transaction,
 
 type Props = {
   scrollRef?: React.RefObject<HTMLDivElement>;
+  shouldRender?: boolean;
   // for tests only
   overloadCount?: number;
 }
 
-const AddressTxs = ({ scrollRef, overloadCount = OVERLOAD_COUNT }: Props) => {
+const AddressTxs = ({ scrollRef, overloadCount = OVERLOAD_COUNT, shouldRender = true }: Props) => {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const isMounted = useIsMounted();
 
   const [ socketAlert, setSocketAlert ] = React.useState('');
   const [ newItemsCount, setNewItemsCount ] = React.useState(0);
@@ -156,6 +159,10 @@ const AddressTxs = ({ scrollRef, overloadCount = OVERLOAD_COUNT }: Props) => {
     handler: handleNewSocketMessage,
   });
 
+  if (!isMounted || !shouldRender) {
+    return null;
+  }
+
   const filter = (
     <AddressTxsFilter
       defaultFilter={ filterValue }
@@ -192,7 +199,7 @@ const AddressTxs = ({ scrollRef, overloadCount = OVERLOAD_COUNT }: Props) => {
         showSocketInfo={ addressTxsQuery.pagination.page === 1 }
         socketInfoAlert={ socketAlert }
         socketInfoNum={ newItemsCount }
-        top={ 80 }
+        top={ ACTION_BAR_HEIGHT_DESKTOP }
         sorting={ sort }
         setSort={ setSort }
       />

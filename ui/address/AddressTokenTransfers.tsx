@@ -13,13 +13,14 @@ import { getResourceKey } from 'lib/api/useApiQuery';
 import getFilterValueFromQuery from 'lib/getFilterValueFromQuery';
 import getFilterValuesFromQuery from 'lib/getFilterValuesFromQuery';
 import useIsMobile from 'lib/hooks/useIsMobile';
+import useIsMounted from 'lib/hooks/useIsMounted';
 import { apos } from 'lib/html-entities';
 import getQueryParamString from 'lib/router/getQueryParamString';
 import useSocketChannel from 'lib/socket/useSocketChannel';
 import useSocketMessage from 'lib/socket/useSocketMessage';
 import { TOKEN_TYPE_IDS } from 'lib/token/tokenTypes';
 import { getTokenTransfersStub } from 'stubs/token';
-import ActionBar from 'ui/shared/ActionBar';
+import ActionBar, { ACTION_BAR_HEIGHT_DESKTOP } from 'ui/shared/ActionBar';
 import DataListDisplay from 'ui/shared/DataListDisplay';
 import * as TokenEntity from 'ui/shared/entities/token/TokenEntity';
 import HashStringShorten from 'ui/shared/HashStringShorten';
@@ -63,14 +64,16 @@ const matchFilters = (filters: Filters, tokenTransfer: TokenTransfer, address?: 
 
 type Props = {
   scrollRef?: React.RefObject<HTMLDivElement>;
+  shouldRender?: boolean;
   // for tests only
   overloadCount?: number;
 }
 
-const AddressTokenTransfers = ({ scrollRef, overloadCount = OVERLOAD_COUNT }: Props) => {
+const AddressTokenTransfers = ({ scrollRef, overloadCount = OVERLOAD_COUNT, shouldRender = true }: Props) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
+  const isMounted = useIsMounted();
 
   const currentAddress = getQueryParamString(router.query.hash);
 
@@ -179,6 +182,18 @@ const AddressTokenTransfers = ({ scrollRef, overloadCount = OVERLOAD_COUNT }: Pr
     handler: handleNewSocketMessage,
   });
 
+  const tokenData = React.useMemo(() => ({
+    address: tokenFilter || '',
+    name: '',
+    icon_url: '',
+    symbol: '',
+    type: 'ERC-20' as const,
+  }), [ tokenFilter ]);
+
+  if (!isMounted || !shouldRender) {
+    return null;
+  }
+
   const numActiveFilters = (filters.type?.length || 0) + (filters.filter ? 1 : 0);
   const isActionBarHidden = !tokenFilter && !numActiveFilters && !data?.items.length && !currentAddress;
 
@@ -189,7 +204,7 @@ const AddressTokenTransfers = ({ scrollRef, overloadCount = OVERLOAD_COUNT }: Pr
           data={ data?.items }
           baseAddress={ currentAddress }
           showTxInfo
-          top={ isActionBarHidden ? 0 : 80 }
+          top={ isActionBarHidden ? 0 : ACTION_BAR_HEIGHT_DESKTOP }
           enableTimeIncrement
           showSocketInfo={ pagination.page === 1 && !tokenFilter }
           socketInfoAlert={ socketAlert }
@@ -217,14 +232,6 @@ const AddressTokenTransfers = ({ scrollRef, overloadCount = OVERLOAD_COUNT }: Pr
       </Show>
     </>
   ) : null;
-
-  const tokenData = React.useMemo(() => ({
-    address: tokenFilter || '',
-    name: '',
-    icon_url: '',
-    symbol: '',
-    type: 'ERC-20' as const,
-  }), [ tokenFilter ]);
 
   const tokenFilterComponent = tokenFilter && (
     <Flex alignItems="center" flexWrap="wrap" mb={{ base: isActionBarHidden ? 3 : 6, lg: 0 }} mr={ 4 }>

@@ -5,10 +5,12 @@ import React from 'react';
 import type { NFTTokenType } from 'types/api/token';
 import type { PaginationParams } from 'ui/shared/pagination/types';
 
+import config from 'configs/app';
 import { useAppContext } from 'lib/contexts/app';
 import * as cookies from 'lib/cookies';
 import getFilterValuesFromQuery from 'lib/getFilterValuesFromQuery';
 import useIsMobile from 'lib/hooks/useIsMobile';
+import useIsMounted from 'lib/hooks/useIsMounted';
 import getQueryParamString from 'lib/router/getQueryParamString';
 import { NFT_TOKEN_TYPE_IDS } from 'lib/token/tokenTypes';
 import { ADDRESS_TOKEN_BALANCE_ERC_20, ADDRESS_NFT_1155, ADDRESS_COLLECTION } from 'stubs/address';
@@ -28,7 +30,8 @@ import TokenBalances from './tokens/TokenBalances';
 type TNftDisplayType = 'collection' | 'list';
 
 const TAB_LIST_PROPS = {
-  my: 3,
+  mt: 1,
+  mb: { base: 6, lg: 1 },
   py: 5,
   columnGap: 3,
 };
@@ -40,9 +43,14 @@ const TAB_LIST_PROPS_MOBILE = {
 
 const getTokenFilterValue = (getFilterValuesFromQuery<NFTTokenType>).bind(null, NFT_TOKEN_TYPE_IDS);
 
-const AddressTokens = () => {
+type Props = {
+  shouldRender?: boolean;
+}
+
+const AddressTokens = ({ shouldRender = true }: Props) => {
   const router = useRouter();
   const isMobile = useIsMobile();
+  const isMounted = useIsMounted();
 
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
@@ -98,6 +106,10 @@ const AddressTokens = () => {
     setTokenTypes(value);
   }, [ nftsQuery, collectionsQuery ]);
 
+  if (!isMounted || !shouldRender) {
+    return null;
+  }
+
   const nftTypeFilter = (
     <PopoverFilter isActive={ tokenTypes && tokenTypes.length > 0 } contentProps={{ w: '200px' }} appliedFiltersNum={ tokenTypes?.length }>
       <TokenTypeFilter<NFTTokenType> nftOnly onChange={ handleTokenTypesChange } defaultValue={ tokenTypes }/>
@@ -107,7 +119,7 @@ const AddressTokens = () => {
   const hasActiveFilters = Boolean(tokenTypes?.length);
 
   const tabs = [
-    { id: 'tokens_erc20', title: 'ERC-20', component: <ERC20Tokens tokensQuery={ erc20Query }/> },
+    { id: 'tokens_erc20', title: `${ config.chain.tokenStandard }-20`, component: <ERC20Tokens tokensQuery={ erc20Query }/> },
     {
       id: 'tokens_nfts',
       title: 'NFTs',
