@@ -43,7 +43,7 @@ const Icon = dynamic(
           return (
             <Jazzicon.default
               diameter={ props.size }
-              seed={ Jazzicon.jsNumberForAddress(props.hash) }
+              seed={ Jazzicon.jsNumberForAddress(props.hash ?? '') }
             />
           );
         };
