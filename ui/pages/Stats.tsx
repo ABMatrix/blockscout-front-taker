@@ -27,7 +27,7 @@ const Stats = () => {
   return (
     <>
       <PageTitle
-        title={ config.meta.seo.enhancedDataEnabled ? `${ config.chain.name } statistic & data` : `${ config.chain.name } stats` }
+        title={ config.meta.seo.enhancedDataEnabled ? `${ config.chain.name } statistic & data` : `${ config.chain.name } Stats` }
       />
 
       <Box mb={{ base: 6, sm: 8 }}>
