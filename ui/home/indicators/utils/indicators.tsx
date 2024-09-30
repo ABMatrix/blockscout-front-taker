@@ -42,13 +42,13 @@ const dailyTxsIndicator: TChainIndicator<'stats_charts_txs'> = {
 
 const coinPriceIndicator: TChainIndicator<'stats_charts_market'> = {
   id: 'coin_price',
-  title: `${ config.chain.currency.symbol } price`,
+  title: `${ config.chain.secondaryCoin.symbol } price`,
   value: (stats) => stats.coin_price === null ?
     '$N/A' :
     '$' + Number(stats.coin_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
   valueDiff: (stats) => stats?.coin_price !== null ? stats?.coin_price_change_percentage : null,
   icon: <NativeTokenIcon boxSize={ 6 }/>,
-  hint: `${ config.chain.currency.symbol } token daily price in USD.`,
+  hint: `${ config.chain.secondaryCoin.symbol } token daily price in USD.`,
   api: {
     resourceName: 'stats_charts_market',
     dataFn: (response) => ([ {
@@ -57,7 +57,7 @@ const coinPriceIndicator: TChainIndicator<'stats_charts_market'> = {
         .sort(sortByDateDesc)
         .reduceRight(nonNullTailReducer, [] as Array<TimeChartItemRaw>)
         .map(mapNullToZero),
-      name: `${ config.chain.currency.symbol } price`,
+      name: `${ config.chain.secondaryCoin.symbol } price`,
       valueFormatter: (x: number) => '$' + x.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
     } ]),
   },
