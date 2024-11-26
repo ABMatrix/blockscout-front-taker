@@ -6,6 +6,7 @@ const chain = Object.freeze({
   id: getEnvValue('NEXT_PUBLIC_NETWORK_ID'),
   name: getEnvValue('NEXT_PUBLIC_NETWORK_NAME'),
   shortName: getEnvValue('NEXT_PUBLIC_NETWORK_SHORT_NAME'),
+  totalTitle: getEnvValue('NEXT_PUBLIC_TOTAL_TITLE'),
   currency: {
     name: getEnvValue('NEXT_PUBLIC_NETWORK_CURRENCY_NAME'),
     weiName: getEnvValue('NEXT_PUBLIC_NETWORK_CURRENCY_WEI_NAME'),

@@ -94,6 +94,8 @@ Please be aware that all environment variables prefixed with `NEXT_PUBLIC_` will
 
 | NEXT_PUBLIC_NETWORK_CURRENCY_IMAGE_URL | `string` | Network currency image url | - | `` | `` |
 
+| NEXT_PUBLIC_TOTAL_TITLE | `string` | Browser Main Title | - | `` | `` |
+
 &nbsp;
 
 ## API configuration
