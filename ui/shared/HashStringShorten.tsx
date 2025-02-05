@@ -13,6 +13,11 @@ interface Props {
 
 const HashStringShorten = ({ hash, isTooltipDisabled, as = 'span', type }: Props) => {
   const charNumber = type === 'long' ? 16 : 8;
+  const emptyStr = '';
+  console.log("hash short string: "+hash);
+  if (!hash) {
+    return <chakra.span as={ as }>{ emptyStr }</chakra.span>;
+  }
   if (hash.length <= charNumber) {
     return <chakra.span as={ as }>{ hash }</chakra.span>;
   }
