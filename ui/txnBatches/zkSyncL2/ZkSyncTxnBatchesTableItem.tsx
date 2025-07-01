@@ -49,7 +49,7 @@ const ZkSyncTxnBatchesTableItem = ({ item, isLoading }: Props) => {
           isLoading={ isLoading }
         >
           <Skeleton isLoaded={ !isLoading } minW="40px" my={ 1 }>
-            { item.tx_count }
+            { item.transaction_count }
           </Skeleton>
         </LinkInternal>
       </Td>

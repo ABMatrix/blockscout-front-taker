@@ -39,7 +39,7 @@ export type OptimisticL2TxnBatchesItem = {
   l1_tx_hashes: Array<string>;
   l1_timestamp: string;
   l2_block_number: number;
-  tx_count: number;
+  transaction_count: number;
 }
 
 export type OptimisticL2TxnBatchesResponse = {

@@ -35,7 +35,7 @@ export const L2_TXN_BATCHES_ITEM: OptimisticL2TxnBatchesItem = {
     TX_HASH,
   ],
   l2_block_number: 5218590,
-  tx_count: 9,
+  transaction_count: 9,
 };
 
 export const L2_OUTPUT_ROOTS_ITEM: OptimisticL2OutputRootsItem = {

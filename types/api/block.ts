@@ -9,7 +9,7 @@ export type BlockType = 'block' | 'reorg' | 'uncle';
 export interface Block {
   height: number;
   timestamp: string;
-  tx_count: number;
+  transaction_count: number;
   miner: AddressParam;
   size: number;
   hash: string;
@@ -45,7 +45,7 @@ export interface Block {
   excess_blob_gas?: string;
   blob_tx_count?: number;
   // ZKSYNC FIELDS
-  zksync?: Omit<ZkSyncBatchesItem, 'number' | 'tx_count' | 'timestamp'> & {
+  zksync?: Omit<ZkSyncBatchesItem, 'number' | 'transaction_count' | 'timestamp'> & {
     'batch_number': number | null;
   };
 }
